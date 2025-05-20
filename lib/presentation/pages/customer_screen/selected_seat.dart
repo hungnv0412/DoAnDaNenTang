@@ -25,16 +25,22 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   bool isProcessing = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadSeats();
-  }
+void initState() {
+  super.initState();
+  // Log kiểm tra các tham số truyền vào
+  print('cinemaId: ${widget.cinemaId}');
+  print('screenId: ${widget.screenId}');
+  print('showtimeId: ${widget.showtimeId}');
+  print('movieId: ${widget.movieId}');
+  _loadSeats();
+}
 
   Future<void> _loadSeats() async {
     var seatDocs = await FirebaseFirestore.instance
         .collection("seats")
         .where('showtimeId', isEqualTo: widget.showtimeId)
         .get();
+      print('Số lượng ghế lấy được: ${seatDocs.docs.length}');
 
     List<Map<String, dynamic>> loadedSeats = seatDocs.docs.map((doc) {
       return {

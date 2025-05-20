@@ -1,85 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/domain/entities/cinema.dart';
+import 'package:my_app/domain/entities/showtime.dart';
 import 'package:my_app/domain/use_cases/get_booking_data.dart';
-import '../../domain/entities/movie.dart';
-import 'package:intl/intl.dart';
 
 class BookingViewModel extends ChangeNotifier {
-  final GetMovieShowtimes getMovieShowtimes;
-  final String movieId;
+  final GetAvailableDatesUseCase getDatesUseCase;
+  final GetCinemasByMovieAndDateUseCase getCinemasUseCase;
+  final GetShowtimesUseCase getShowtimesUseCase;
+  
 
-  Movie? _movie;
-  bool _isLoading = true;
-  String? _selectedDate;
-  List<String> _availableDates = [];
-  Map<String, List<Map<String, dynamic>>> _cinemaShowtimes = {};
-  String? _errorMessage;
+  DateTime? selectedDate;
+  Cinema? selectedCinema;
+  List<String> availableDates = [];
+  List<Cinema> availableCinemas = [];
+  List<Showtime> showtimes = [];
 
-  BookingViewModel({
-    required this.getMovieShowtimes,
-    required this.movieId,
-  }) {
-    _loadData();
-  }
+  BookingViewModel(this.getDatesUseCase, this.getCinemasUseCase, this.getShowtimesUseCase);
+  bool isLoading = false;
 
-  // Getters
-  Movie? get movie => _movie;
-  bool get isLoading => _isLoading;
-  String? get selectedDate => _selectedDate;
-  List<String> get availableDates => _availableDates;
-  Map<String, List<Map<String, dynamic>>> get cinemaShowtimes => _cinemaShowtimes;
-  String? get errorMessage => _errorMessage;
-
-  void _setLoading(bool value) {
-    _isLoading = value;
+  Future<void> loadAvailableDates(String movieId) async {
+    isLoading = true;
     notifyListeners();
-  }
-
-  Future<void> _loadData() async {
-    _setLoading(true);
-    _errorMessage = null;
-
     try {
-      final result = await getMovieShowtimes.execute(movieId);
-      _movie = result.movie;
-      _processShowtimes(result.showtimes);
-    } catch (e) {
-      _errorMessage = "Đã xảy ra lỗi khi tải dữ liệu!";
+      availableDates = await getDatesUseCase(movieId);
     } finally {
-      _setLoading(false);
+      isLoading = false;
+      notifyListeners();
     }
   }
 
-  void _processShowtimes(List<Map<String, dynamic>> showtimes) {
-    Set<String> dates = {};
-    Map<String, List<Map<String, dynamic>>> showtimeMap = {};
+  Future<void> selectDate(String movieId, DateTime date) async {
+    selectedDate = date;
+    isLoading = true;
+    notifyListeners();
+    try {
+      availableCinemas = await getCinemasUseCase(movieId, date);
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 
-    for (var showtime in showtimes) {
-      final dateStr = showtime["date"];
+  Future<void> selectCinema(String movieId, Cinema cinema) async {
+    selectedCinema = cinema;
+    if (selectedDate != null) {
+      isLoading = true;
+      notifyListeners();
       try {
-        final parsedDate = DateFormat("d/M/yyyy").parse(dateStr);
-        final today = DateTime.now();
-        final todayDateOnly = DateTime(today.year, today.month, today.day);
-
-        // if (parsedDate.isBefore(todayDateOnly)) continue;
-
-        dates.add(dateStr);
-        showtimeMap.putIfAbsent(dateStr, () => []);
-        showtimeMap[dateStr]!.add(showtime);
-      } catch (e) {
-        print("Error parsing date: $e");
+        showtimes = await getShowtimesUseCase(movieId, cinema.id, selectedDate!);
+        print(showtimes.map((showtimes) => showtimes.screenId));
+      } finally {
+        isLoading = false;
+        notifyListeners();
       }
     }
-
-    _availableDates = dates.toList()..sort();
-    _cinemaShowtimes = showtimeMap;
-    if (_availableDates.isNotEmpty) {
-      _selectedDate = _availableDates.first;
-    }
-    notifyListeners();
   }
-
-  void selectDate(String date) {
-    _selectedDate = date;
+  void clear() {
+    selectedDate = null;
+    selectedCinema = null;
+    availableDates = [];
+    availableCinemas = [];
+    showtimes = [];
+    isLoading = false;
     notifyListeners();
   }
 }

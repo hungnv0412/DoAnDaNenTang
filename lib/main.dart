@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/data/repositories/booking_repository_impl.dart';
+import 'package:my_app/data/repositories/showtimes_repository_impl.dart';
 import 'package:my_app/domain/use_cases/get_booking_data.dart';
 
 import 'package:my_app/presentation/pages/customer_screen/home_page.dart';
@@ -28,12 +28,12 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<SignInViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<SignUpViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<DetailFilmViewModel>()),
-        ChangeNotifierProvider(create: (_) => BookingViewModel(
-          movieId: '',
-          getMovieShowtimes: GetMovieShowtimes(
-            BookingRepositoryImpl(),
-          ),
-        )),
+        ChangeNotifierProvider(
+            create: (_) => BookingViewModel(
+                  sl<GetAvailableDatesUseCase>(),
+                  sl<GetCinemasByMovieAndDateUseCase>(),
+                  sl<GetShowtimesUseCase>(),
+                )),
         // Add other states here as needed
       ],
       child: MaterialApp(

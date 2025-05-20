@@ -1,138 +1,117 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/domain/use_cases/get_booking_data.dart';
+import 'package:intl/intl.dart';
+import 'package:my_app/presentation/pages/customer_screen/selected_seat.dart';
 import 'package:my_app/presentation/view_model/booking_viewmodel.dart';
 import 'package:provider/provider.dart';
-import '../../../data/repositories/booking_repository_impl.dart';
 
-class BookingScreen extends StatelessWidget {
+class BookingScreen extends StatefulWidget {
   final String movieId;
-
-  const BookingScreen({super.key, required this.movieId});
+  const BookingScreen({required this.movieId});
 
   @override
+  State<BookingScreen> createState() => _BookingScreenState();
+}
+
+class _BookingScreenState extends State<BookingScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Load danh sách ngày chiếu khi vào trang
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<BookingViewModel>(context, listen: false)
+          .loadAvailableDates(widget.movieId);
+      Provider.of<BookingViewModel>(context, listen: false).clear();
+    });
+  }
+  
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => BookingViewModel(
-        movieId: movieId,
-        getMovieShowtimes: GetMovieShowtimes(
-          BookingRepositoryImpl(),
-        ),
-      ),
-      child: Consumer<BookingViewModel>(
-        builder: (context, viewModel, _) {
-          return Scaffold(
-            backgroundColor: Colors.black,
-            appBar: AppBar(
-              title: Text(
-                viewModel.movie?.name ?? "Đang tải...",
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: Colors.grey[900],
-              iconTheme: IconThemeData(color: Colors.white),
-            ),
-            body: viewModel.isLoading
-                ? Center(child: CircularProgressIndicator(color: Colors.white))
-                : viewModel.availableDates.isEmpty
-                    ? Center(
-                        child: Text(
-                          "Không có suất chiếu nào",
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildDateList(viewModel),
-                          if (viewModel.selectedDate != null)
-                            _buildCinemaList(viewModel),
-                        ],
-                      ),
-          );
-        },
-      ),
-    );
-  }
+    final vm = Provider.of<BookingViewModel>(context);
 
-  Widget _buildDateList(BookingViewModel viewModel) {
-    return SizedBox(
-      height: 60,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: viewModel.availableDates.length,
-        itemBuilder: (context, index) {
-          String date = viewModel.availableDates[index];
-          return GestureDetector(
-            onTap: () => viewModel.selectDate(date),
-            child: Container(
-              margin: EdgeInsets.all(8),
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: viewModel.selectedDate == date
-                    ? Colors.blueAccent
-                    : Colors.grey[800],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                date,
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildCinemaList(BookingViewModel viewModel) {
-    return Expanded(
-      child: ListView(
-        children: viewModel.cinemaShowtimes[viewModel.selectedDate]!
-            .map((cinema) => Card(
-                  color: Colors.grey[850],
-                  margin: EdgeInsets.all(8),
-                  child: ExpansionTile(
-                    title: Text(
-                      cinema["cinemaName"],
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    subtitle: Text(
-                      cinema["location"],
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                    iconColor: Colors.white,
-                    collapsedIconColor: Colors.white,
-                    children: [
-                      _buildShowtimeList(viewModel, cinema),
-                      SizedBox(height: 10),
-                    ],
+    return Scaffold(
+      appBar: AppBar(title: Text("Đặt vé")),
+      body: vm.isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Chọn ngày:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: vm.availableDates.map((dateStr) {
+                      final date = DateFormat("d/M/yyyy").parse(dateStr);
+                      return ChoiceChip(
+                        label: Text(DateFormat('dd/MM').format(date)),
+                        selected: vm.selectedDate == date,
+                        onSelected: (_) async {
+                          if (vm.selectedDate != date) {
+                            // Clear cinema & showtimes khi chọn ngày mới
+                            vm.selectedCinema = null;
+                            vm.showtimes = [];
+                            await vm.selectDate(widget.movieId, date);
+                          }
+                        },
+                      );
+                    }).toList(),
                   ),
-                ))
-            .toList(),
-      ),
-    );
-  }
-
-  Widget _buildShowtimeList(BookingViewModel viewModel, Map<String, dynamic> cinema) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 10,
-      runSpacing: 10,
-      children: viewModel.cinemaShowtimes[viewModel.selectedDate]!
-          .where((item) => item["cinemaId"] == cinema["cinemaId"])
-          .map((showtime) => ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-                onPressed: () {
-                  // Navigate to seat selection
-                },
-                child: Text(
-                  showtime["time"],
-                  style: TextStyle(color: Colors.white),
-                ),
-              ))
-          .toList(),
+                  SizedBox(height: 24),
+                  if (vm.selectedDate != null) ...[
+                    Text("Chọn rạp:", style: TextStyle(fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    ...vm.availableCinemas.map((cinema) {
+                      final isSelected = vm.selectedCinema?.id == cinema.id;
+                      return Card(
+                        child: ListTile(
+                          title: Text(cinema.name),
+                          subtitle: Text(cinema.location),
+                          selected: isSelected,
+                          onTap: () async {
+                            if (!isSelected) {
+                              // Clear showtimes khi chọn rạp mới
+                              vm.showtimes = [];
+                              await vm.selectCinema(widget.movieId, cinema);
+                            }
+                          },
+                          trailing: isSelected
+                              ? Icon(Icons.keyboard_arrow_down)
+                              : Icon(Icons.keyboard_arrow_right),
+                        ),
+                      );
+                    }),
+                  ],
+                  SizedBox(height: 24),
+                  if (vm.selectedCinema != null) ...[
+                    Text("Chọn giờ chiếu:", style: TextStyle(fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    vm.showtimes.isEmpty
+                        ? Text("Không có suất chiếu.")
+                        : Wrap(
+                            spacing: 8,
+                            children: vm.showtimes.map((showtime) => 
+                              GestureDetector(
+                                onTap: () => Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SeatSelectionScreen(
+                                      movieId: widget.movieId,
+                                      cinemaId: vm.selectedCinema!.id,
+                                      screenId: showtime.screenId,
+                                      showtimeId: showtime.id,
+                                    ),
+                                  ),
+                                ),
+                                child: Chip(label: Text(showtime.time)),
+                              )
+                            ).toList(),
+                          ),
+                  ], 
+                ],
+              ),
+            ),
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:my_app/data/repositories/booking_repository_impl.dart';
-import 'package:my_app/domain/repositories/booking_repository.dart';
+import 'package:my_app/data/repositories/showtimes_repository_impl.dart';
+import 'package:my_app/domain/repositories/showtimes_repository.dart';
 import 'package:my_app/domain/use_cases/get_booking_data.dart';
 import 'package:my_app/domain/use_cases/get_movie_by_id.dart';
 import 'package:my_app/presentation/view_model/booking_viewmodel.dart';
@@ -40,8 +40,8 @@ void init() {
       () => UserRepositoryImpl(sl(), sl()));
   sl.registerLazySingleton<MovieRepository>(() => MovieRepositoryImpl(sl()));
   sl.registerLazySingleton<CinemaRepository>(() => CinemaRepositoryImpl(sl()));
-  sl.registerLazySingleton<BookingRepository>(
-      () => BookingRepositoryImpl( ));
+  sl.registerLazySingleton<ShowtimesRepository>(()=> ShowtimesRepositoryImpl(sl()));
+
 
   // Use Cases
   sl.registerLazySingleton(() => GetMovies(sl()));
@@ -49,7 +49,9 @@ void init() {
   sl.registerLazySingleton(() => SignInUseCase(sl()));
   sl.registerLazySingleton(() => SignUpUseCase(sl()));
   sl.registerLazySingleton(() => GetMovieById(sl()));
-  sl.registerLazySingleton(()=> GetMovieShowtimes(sl()));
+  sl.registerLazySingleton(() => GetAvailableDatesUseCase(sl()));
+  sl.registerLazySingleton(() => GetCinemasByMovieAndDateUseCase(sl()));
+  sl.registerLazySingleton(() => GetShowtimesUseCase(sl()));
 
   // View Models
   sl.registerFactory(() => HomeViewModel(
@@ -62,6 +64,8 @@ void init() {
         getMovieById: sl(),
       ));
   sl.registerFactory(() => BookingViewModel(
-        getMovieShowtimes: sl(), movieId: '',
-      ));
+        GetAvailableDatesUseCase(sl()),
+        GetCinemasByMovieAndDateUseCase(sl()),
+        GetShowtimesUseCase(sl()),
+  ));
 }

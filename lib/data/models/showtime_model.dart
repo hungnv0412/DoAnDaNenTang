@@ -1,22 +1,15 @@
-// data/models/showtime_model.dart
+
 import '../../domain/entities/showtime.dart';
 
 class ShowtimeModel extends Showtime {
   ShowtimeModel({
-    required String id,
-    required String movieId,
-    required String cinemaId,
-    required String screenId,
-    required String date,
-    required String time,
-  }) : super(
-          id: id,
-          movieId: movieId,
-          cinemaId: cinemaId,
-          date: date,
-          time: time,
-          screenId: screenId,
-        );
+    required super.id,
+    required super.movieId,
+    required super.cinemaId,
+    required super.screenId,
+    required super.date,
+    required super.time,
+  });
 
   factory ShowtimeModel.fromJson(Map<String, dynamic> json) {
     return ShowtimeModel(
@@ -28,14 +21,14 @@ class ShowtimeModel extends Showtime {
       screenId: json['screenId'] as String,
     );
   }
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'movieId': movieId,
-      'cinemaId': cinemaId,
-      'screenId': screenId,
-      'date': date,
-      'time': time,
-    };
+  Showtime toJson() {
+    return Showtime(
+      id: id,
+      movieId: movieId,
+      cinemaId: cinemaId,
+      date: date,
+      time: time,
+      screenId: screenId,
+    );
   }
 }

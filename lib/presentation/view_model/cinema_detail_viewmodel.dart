@@ -1,19 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:my_app/domain/use_cases/get_cinema_detail.dart';
 
 class CinemaDetailViewModel extends ChangeNotifier {
+  final String cinemaId;
+  final GetCinemaDetailUseCase useCase;
+
   bool isLoading = true;
   List<String> availableDates = [];
   String selectedDate = "";
   List<String> showtimeHours = [];
   String selectedHour = "";
-  List<Map<String, dynamic>> moviesList = [];
+  List<CinemaMovieInfo> moviesList = [];
   String cinemaName = "đang tải...";
 
-  final String cinemaId;
-  final _firestore = FirebaseFirestore.instance;
-
-  CinemaDetailViewModel(this.cinemaId) {
+  CinemaDetailViewModel(this.cinemaId, this.useCase) {
     fetchData();
   }
 
@@ -22,57 +22,17 @@ class CinemaDetailViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      final cinemaFuture = _firestore.collection('cinemas').doc(cinemaId).get();
-      final showtimesFuture = _firestore
-          .collection('showtimes')
-          .where('cinemaId', isEqualTo: cinemaId)
-          .get();
+      final (name, movieInfos) = await useCase.execute(cinemaId);
+      cinemaName = name;
+      moviesList = movieInfos;
 
-      final results = await Future.wait([cinemaFuture, showtimesFuture]);
-
-      final cinemaDoc = results[0] as DocumentSnapshot;
-      if (cinemaDoc.exists) {
-        cinemaName = cinemaDoc["name"];
-      }
-
-      final showtimesSnapshot = results[1] as QuerySnapshot;
-      Set<String> dates = {};
-      List<Map<String, dynamic>> tempMovies = [];
-
-      for (var showtime in showtimesSnapshot.docs) {
-        var data = showtime.data() as Map<String, dynamic>;
-        var date = data['date'] ?? '';
-        var hour = data['time'] ?? '';
-        var movieId = data['movieId'] ?? '';
-
-        if (date.isEmpty || hour.isEmpty || movieId.isEmpty|| date.isBefore(DateTime.now())) continue;
-
-        dates.add(date);
-
-        var movieDoc = await _firestore.collection('movies').doc(movieId).get();
-
-        if (movieDoc.exists) {
-          var movieData = movieDoc.data() ?? {};
-          tempMovies.add({
-            'showtimeId': showtime.id,
-            'time': hour,
-            'date': date,
-            'movieId': movieId,
-            'movieName': movieData['name'] ?? 'Không rõ',
-            'posterUrl': movieData['imageUrl'] ?? '',
-          });
-        }
-      }
-
-      availableDates = dates.toList()..sort();
+      availableDates = movieInfos.map((e) => e.date).toSet().toList()..sort();
       selectedDate = availableDates.isNotEmpty ? availableDates.first : "";
-      moviesList = tempMovies;
-      isLoading = false;
-      
+
       updateShowtimes();
-      notifyListeners();
     } catch (e) {
-      print("Lỗi khi tải dữ liệu: $e");
+      print("Lỗi: $e");
+    } finally {
       isLoading = false;
       notifyListeners();
     }
@@ -80,12 +40,12 @@ class CinemaDetailViewModel extends ChangeNotifier {
 
   void updateShowtimes() {
     showtimeHours = moviesList
-        .where((movie) => movie['date'] == selectedDate)
-        .map((movie) => movie['time'] as String)
+        .where((e) => e.date == selectedDate)
+        .map((e) => e.time)
         .toSet()
         .toList()
       ..sort();
-    
+
     selectedHour = showtimeHours.isNotEmpty ? showtimeHours.first : "";
     notifyListeners();
   }

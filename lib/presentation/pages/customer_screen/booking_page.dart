@@ -20,20 +20,25 @@ class _BookingScreenState extends State<BookingScreen> {
     // Load danh sách ngày chiếu khi vào trang
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<BookingViewModel>(context, listen: false)
+          .clear();
+      Provider.of<BookingViewModel>(context, listen: false)
           .loadAvailableDates(widget.movieId);
-      Provider.of<BookingViewModel>(context, listen: false).clear();
     });
   }
-  
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<BookingViewModel>(context);
 
     return Scaffold(
       appBar: AppBar(title: Text("Đặt vé")),
-      body: vm.isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
+      body: Builder(builder: (context){
+        if(vm.isLoading) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if(vm.availableDates.isEmpty) {
+          return Center(child: Text("Không có ngày chiếu nào"));
+        }
+        return Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +55,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         onSelected: (_) async {
                           if (vm.selectedDate != date) {
                             // Clear cinema & showtimes khi chọn ngày mới
-                            vm.selectedCinema = null;
+                            vm.selectedDate = null;
                             vm.showtimes = [];
                             await vm.selectDate(widget.movieId, date);
                           }
@@ -111,7 +116,8 @@ class _BookingScreenState extends State<BookingScreen> {
                   ], 
                 ],
               ),
-            ),
+            );
+      })
     );
   }
 }

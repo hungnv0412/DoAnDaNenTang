@@ -1,6 +1,7 @@
-import 'package:my_app/domain/entities/cinema.dart';
-import 'package:my_app/domain/entities/showtime.dart';
-import 'package:my_app/domain/repositories/showtimes_repository.dart';
+
+import '../entities/cinema.dart';
+import '../entities/showtime.dart';
+import '../repositories/showtimes_repository.dart';
 
 class GetAvailableDatesUseCase {
   final ShowtimesRepository repository;

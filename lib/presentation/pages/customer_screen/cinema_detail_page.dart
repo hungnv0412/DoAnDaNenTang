@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/presentation/view_model/cinema_detail_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:my_app/presentation/view_model/cinema_detail_viewmodel.dart';
 import 'package:my_app/presentation/pages/customer_screen/detail_film_page.dart';
+import 'package:my_app/core/service_locator.dart';
 
+import '../../../domain/use_cases/get_cinema_detail.dart';
 
 class CinemaDetailPage extends StatelessWidget {
   final String cinemaId;
@@ -15,7 +17,10 @@ class CinemaDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => CinemaDetailViewModel(cinemaId),
+      create: (_) => CinemaDetailViewModel(
+        cinemaId,
+        sl(), // Inject GetCinemaDetailUseCase từ service locator
+      ),
       child: const _CinemaDetailView(),
     );
   }
@@ -28,24 +33,26 @@ class _CinemaDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<CinemaDetailViewModel>();
 
-    List<Map<String, dynamic>> filteredMovies = viewModel.moviesList
-        .where((movie) =>
-            movie['date'] == viewModel.selectedDate &&
-            movie['time'] == viewModel.selectedHour)
-        .toList();
+    // Lọc danh sách phim theo ngày và giờ đã chọn
+    final filteredMovies = viewModel.moviesList.where((movie) {
+      final matchDate = movie.date == viewModel.selectedDate;
+      final matchHour = viewModel.selectedHour.isEmpty || movie.time == viewModel.selectedHour;
+      return matchDate && matchHour;
+    }).toList();
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(viewModel.cinemaName, style: TextStyle(color: Colors.white)),
+        title: Text(viewModel.cinemaName, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: viewModel.isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.white))
+          ? const Center(child: CircularProgressIndicator(color: Colors.white))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Danh sách ngày
                 SizedBox(
                   height: 60,
                   child: ListView.builder(
@@ -56,8 +63,8 @@ class _CinemaDetailView extends StatelessWidget {
                       return GestureDetector(
                         onTap: () => viewModel.selectDate(date),
                         child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                           decoration: BoxDecoration(
                             color: viewModel.selectedDate == date
                                 ? Colors.blueAccent
@@ -67,7 +74,7 @@ class _CinemaDetailView extends StatelessWidget {
                           child: Center(
                             child: Text(
                               date,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -80,8 +87,9 @@ class _CinemaDetailView extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
 
+                // Danh sách giờ chiếu
                 SizedBox(
                   height: 60,
                   child: ListView.builder(
@@ -92,8 +100,8 @@ class _CinemaDetailView extends StatelessWidget {
                       return GestureDetector(
                         onTap: () => viewModel.selectHour(hour),
                         child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                           decoration: BoxDecoration(
                             color: viewModel.selectedHour == hour
                                 ? Colors.redAccent
@@ -103,7 +111,7 @@ class _CinemaDetailView extends StatelessWidget {
                           child: Center(
                             child: Text(
                               hour,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -116,11 +124,12 @@ class _CinemaDetailView extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
 
+                // Danh sách phim
                 Expanded(
                   child: filteredMovies.isEmpty
-                      ? Center(
+                      ? const Center(
                           child: Text(
                             "Không có phim nào cho thời gian này!",
                             style: TextStyle(color: Colors.white),
@@ -128,7 +137,8 @@ class _CinemaDetailView extends StatelessWidget {
                         )
                       : ListView.builder(
                           itemCount: filteredMovies.length,
-                          itemBuilder: (context, index) => _buildMovieCard(context, filteredMovies[index]),
+                          itemBuilder: (context, index) =>
+                              _buildMovieCard(context, filteredMovies[index]),
                         ),
                 ),
               ],
@@ -136,38 +146,38 @@ class _CinemaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildMovieCard(BuildContext context, Map<String, dynamic> movie) {
+  Widget _buildMovieCard(BuildContext context, CinemaMovieInfo movie) {
     return Card(
       color: Colors.grey[900],
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       child: ListTile(
         leading: Image.network(
-          movie['posterUrl'],
+          movie.posterUrl,
           width: 50,
           height: 75,
           fit: BoxFit.cover,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
-            return Center(child: CircularProgressIndicator(color: Colors.white));
+            return const Center(child: CircularProgressIndicator(color: Colors.white));
           },
           errorBuilder: (context, error, stackTrace) {
-            return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+            return const Icon(Icons.broken_image, size: 50, color: Colors.grey);
           },
         ),
         title: Text(
-          movie['movieName'],
-          style: TextStyle(color: Colors.white),
+          movie.movieName,
+          style: const TextStyle(color: Colors.white),
         ),
         subtitle: Text(
-          "Giờ: ${movie['time']} - Ngày: ${movie['date']}",
+          "Giờ: ${movie.time} - Ngày: ${movie.date}",
           style: TextStyle(color: Colors.grey[400]),
         ),
-        trailing: Icon(Icons.arrow_forward, color: Colors.white),
+        trailing: const Icon(Icons.arrow_forward, color: Colors.white),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DetailFilmPage(movieId: movie['movieId']),
+              builder: (context) => DetailFilmPage(movieId: movie.movieId),
             ),
           );
         },

@@ -4,6 +4,7 @@ import 'package:my_app/domain/use_cases/get_booking_data.dart';
 
 import 'package:my_app/presentation/pages/customer_screen/home_page.dart';
 import 'package:my_app/presentation/view_model/booking_viewmodel.dart';
+import 'package:my_app/presentation/view_model/cinema_detail_viewmodel.dart';
 import 'package:my_app/presentation/view_model/detail_film_view_model.dart';
 import 'package:my_app/presentation/view_model/sign_in_view_model.dart';
 import 'package:my_app/presentation/view_model/sign_up_view_model.dart';
@@ -28,12 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<SignInViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<SignUpViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<DetailFilmViewModel>()),
-        ChangeNotifierProvider(
-            create: (_) => BookingViewModel(
-                  sl<GetAvailableDatesUseCase>(),
-                  sl<GetCinemasByMovieAndDateUseCase>(),
-                  sl<GetShowtimesUseCase>(),
-                )),
+        ChangeNotifierProvider(create: (_) => sl<BookingViewModel>()),
         // Add other states here as needed
       ],
       child: MaterialApp(

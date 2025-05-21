@@ -14,31 +14,32 @@ class CinemaRepositoryImpl implements CinemaRepository {
   Future<List<Cinema>> getCinemas() async {
     final snapshot = await firestore.collection('cinemas').get();
     return snapshot.docs.map((doc) {
-      return Cinema(
-        id: doc.id,
-        name: doc['name'],
-        location: doc['location'],
-        imageUrl: doc['imageUrl'],
-      );
+      return CinemaModel.fromJson({
+        ...doc.data(),
+        'id': doc.id,
+      });
     }).toList();
   }
-
   @override
-  Future<Cinema> getCinemaById(String id) async {
-    final doc = await firestore.collection('cinemas').doc(id).get();
-    if (!doc.exists) throw Exception('Cinema not found');
-    return CinemaModel.fromJson({...doc.data()!, 'id': doc.id});
+  Future<String> getCinemaName(String cinemaId) async {
+    final doc = await firestore.collection('cinemas').doc(cinemaId).get();
+    return doc.exists ? doc['name'] ?? 'Không rõ' : 'Không tìm thấy';
   }
 
   @override
-  Future<List<Showtime>> getCinemaShowtimes(String cinemaId) async {
+  Future<List<Showtime>> getShowtimesByCinema(String cinemaId) async {
     final snapshot = await firestore
         .collection('showtimes')
         .where('cinemaId', isEqualTo: cinemaId)
         .get();
-    
-    return snapshot.docs
-        .map((doc) => ShowtimeModel.fromJson({...doc.data(), 'id': doc.id}))
-        .toList();
+
+    return snapshot.docs.map((doc) {
+      return ShowtimeModel.fromJson({
+        ...doc.data(),
+        'id': doc.id,
+      });
+    }).toList();
   }
+  
+
 }

@@ -1,28 +1,31 @@
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:my_app/data/repositories/showtimes_repository_impl.dart';
-import 'package:my_app/domain/repositories/showtimes_repository.dart';
-import 'package:my_app/domain/use_cases/get_booking_data.dart';
-import 'package:my_app/domain/use_cases/get_movie_by_id.dart';
-import 'package:my_app/presentation/view_model/booking_viewmodel.dart';
+
 
 // Repositories
+import '../data/repositories/showtimes_repository_impl.dart';
 import '../data/repositories/user_repository_impl.dart';
 import '../data/repositories/movie_repository_impl.dart';
 import '../data/repositories/cinema_repository_impl.dart';
 
+import '../domain/repositories/showtimes_repository.dart';
 import '../domain/repositories/user_repository.dart';
 import '../domain/repositories/movie_repository.dart';
 import '../domain/repositories/cinema_repository.dart';
 
 // Use Cases
+import '../domain/use_cases/get_booking_data.dart';
+import '../domain/use_cases/get_cinema_detail.dart';
+import '../domain/use_cases/get_movie_by_id.dart';
 import '../domain/use_cases/get_movies.dart';
 import '../domain/use_cases/get_cinemas.dart';
 import '../domain/use_cases/sign_in_use_case.dart';
 import '../domain/use_cases/sign_up_use_case.dart';
 
 // View Models
+import '../presentation/view_model/booking_viewmodel.dart';
+import '../presentation/view_model/cinema_detail_viewmodel.dart';
 import '../presentation/view_model/home_view_model.dart';
 import '../presentation/view_model/sign_in_view_model.dart';
 import '../presentation/view_model/sign_up_view_model.dart';
@@ -52,6 +55,7 @@ void init() {
   sl.registerLazySingleton(() => GetAvailableDatesUseCase(sl()));
   sl.registerLazySingleton(() => GetCinemasByMovieAndDateUseCase(sl()));
   sl.registerLazySingleton(() => GetShowtimesUseCase(sl()));
+  sl.registerLazySingleton(() => GetCinemaDetailUseCase(sl(), sl()));
 
   // View Models
   sl.registerFactory(() => HomeViewModel(
@@ -64,8 +68,7 @@ void init() {
         getMovieById: sl(),
       ));
   sl.registerFactory(() => BookingViewModel(
-        GetAvailableDatesUseCase(sl()),
-        GetCinemasByMovieAndDateUseCase(sl()),
-        GetShowtimesUseCase(sl()),
-  ));
+        getDatesUseCase: sl(),
+        getCinemasUseCase: sl(),
+        getShowtimesUseCase: sl()));
 }

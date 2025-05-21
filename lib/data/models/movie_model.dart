@@ -7,7 +7,7 @@ class MovieModel extends Movie {
     required String releaseDate,
     required String name,
     required String genre,
-    required int duration,
+    required String duration,
     required String imageUrl,
     required String fullDescription,
   }) : super(
@@ -15,7 +15,7 @@ class MovieModel extends Movie {
           releaseDate: releaseDate,
           name: name,
           genre: genre,
-          duration: duration.toString(),
+          duration: duration,
           imageUrl: imageUrl,
           fullDescription: fullDescription,
         );
@@ -26,7 +26,7 @@ class MovieModel extends Movie {
       releaseDate: json['releaseDate'] as String,
       name: json['name'] as String,
       genre: json['genre'] as String,
-      duration: json['duration'] as int,
+      duration: json['duration'] as String,
       imageUrl: json['imageUrl'] as String,
       fullDescription: json['fullDescription'] as String,
     );

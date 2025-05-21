@@ -1,5 +1,6 @@
-import 'package:my_app/domain/entities/cinema.dart';
-import 'package:my_app/domain/entities/showtime.dart';
+
+import '../entities/cinema.dart';
+import '../entities/showtime.dart';
 
 
 abstract class ShowtimesRepository {

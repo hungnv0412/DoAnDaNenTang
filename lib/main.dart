@@ -7,12 +7,14 @@ import 'package:my_app/presentation/view_model/detail_film_view_model.dart';
 import 'package:my_app/presentation/view_model/select_seat_viewmodel.dart';
 import 'package:my_app/presentation/view_model/sign_in_view_model.dart';
 import 'package:my_app/presentation/view_model/sign_up_view_model.dart';
+import 'package:my_app/presentation/view_model/ticket_detail_viewmodel.dart';
 import 'package:my_app/presentation/view_model/ticket_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/service_locator.dart';
 import 'presentation/view_model/cinema_detail_viewmodel.dart';
 import 'presentation/view_model/home_view_model.dart';
+import 'presentation/view_model/profile_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +36,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<CinemaDetailViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<SelectSeatViewmodel>()),
         ChangeNotifierProvider(create: (_) => sl<TicketViewmodel>()),
+        ChangeNotifierProvider(create: (_) => sl<ProfileViewmodel>()),
+        ChangeNotifierProvider(create: (_) => sl<TicketDetailViewmodel>()),
         // Add other states here as needed
       ],
       child: MaterialApp(

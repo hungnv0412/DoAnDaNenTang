@@ -19,4 +19,16 @@ class BookingRepositoryImpl implements BookingRepository{
       });
     }).toList();
   }
+  @override
+  Future<Booking> getBookingById(String bookingId) async {
+    final doc = await firestore.collection('bookings').doc(bookingId).get();
+    if (doc.exists) {
+      return BookingModel.fromJson({
+        ...doc.data()!,
+        'id': doc.id,
+      });
+    } else {
+      throw Exception('Booking not found');
+    }
+  }
 }

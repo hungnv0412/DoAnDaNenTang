@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/cinema.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/use_cases/get_cinemas.dart';
@@ -14,19 +15,16 @@ class HomeViewModel extends ChangeNotifier {
   List<Cinema> _cinemas = [];
   List<Movie> _movies = [];
   User? _currentUser;
+  int _selectedIndex = 0;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   List<Cinema> get cinemas => _cinemas;
   List<Movie> get movies => _movies;
   User? get currentUser => _currentUser;
+  int get selectedIndex => _selectedIndex;
 
   HomeViewModel({required this.getMovies, required this.getCinemas});
-
-  void setCurrentUser(User user) {
-    _currentUser = user;
-    notifyListeners();
-  }
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -56,4 +54,21 @@ class HomeViewModel extends ChangeNotifier {
       _setLoading(false);
     }
   }
+  List<Movie> get filteredMovies {
+    final now = DateTime.now();
+
+    return _movies.where((movie) {
+      final releaseDate = DateFormat("dd/MM/yyyy").parse(movie.releaseDate.trim());
+      if (_selectedIndex == 0) {
+        return releaseDate.isBefore(now) || releaseDate.isAtSameMomentAs(now);
+      } else {
+        return releaseDate.isAfter(now);
+      }
+    }).toList();
+  }
+  void setSelectedIndex(int index) {
+    _selectedIndex = index;
+    notifyListeners();
+  }
+
 }

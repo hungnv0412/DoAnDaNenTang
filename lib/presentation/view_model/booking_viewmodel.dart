@@ -34,65 +34,61 @@ class BookingViewModel extends ChangeNotifier {
     required this.getShowtimesUseCase,
     required this.getMovieByIdUseCase,
   });
-
-  Future<String> loadMovieName(String movieId) async {
-    _setLoading(true);
-    _errorMessage = null;
-    try {
-      final movie = await getMovieByIdUseCase(movieId);
-      if (movie != null) {
-        _movieName = movie.name;
-        return _movieName;
-      } else {
-        _errorMessage = "Lỗi khi tải tên phim";
-      }
-    } catch (e) {
-      _errorMessage = "Lỗi khi tải tên phim";
-    } finally {
-      _setLoading(false);
-    }
-    return Future.error(_errorMessage ?? "Unknown error");
-  }
-
   Future<void> loadAvailableDates(String movieId) async {
-    _setLoading(true);
+    _isLoading = true;
     _errorMessage = null;
     try {
       _availableDates = await getDatesUseCase(movieId);
     } catch (e) {
       _errorMessage = "Lỗi khi tải ngày chiếu";
-    } finally {
-      _setLoading(false);
+    }
+    finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
-
+  Future<void> loadMovieName(String movieId) async {
+    _errorMessage = null;
+    try {
+      final movie = await getMovieByIdUseCase(movieId);
+      _movieName = movie.name;
+    } catch (e) {
+      _errorMessage = "Lỗi khi tải tên phim";
+    }
+  }
   Future<void> selectDate(String movieId, DateTime date) async {
+    _isLoading = true;
+    _errorMessage = null;
     _selectedDate = date;
-    _setLoading(true);
     _errorMessage = null;
     try {
       _availableCinemas = await getCinemasUseCase(movieId, date);
     } catch (e) {
       _errorMessage = "Lỗi khi tải rạp";
-    } finally {
-      _setLoading(false);
+    } 
+    finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   Future<void> selectCinema(String movieId, Cinema cinema) async {
+    _isLoading = true;
+    _errorMessage = null;
     _selectedCinema = cinema;
     if (_selectedDate != null) {
-      _setLoading(true);
       _errorMessage = null;
       try {
         _showtimes = await getShowtimesUseCase(movieId, cinema.id, _selectedDate!);
       } catch (e) {
         _errorMessage = "Lỗi khi tải suất chiếu";
-      } finally {
-        _setLoading(false);
+      } 
+      finally {
+        _isLoading = false;
+        notifyListeners();
       }
     }
-  }
+  } 
 
   void clear() {
     _selectedDate = null;
@@ -112,9 +108,5 @@ class BookingViewModel extends ChangeNotifier {
     _showtimes = showtimes;
     notifyListeners();
   }
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
+  
 }

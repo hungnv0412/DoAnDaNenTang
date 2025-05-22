@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_app/presentation/pages/customer_screen/ticket_detail_page.dart';
 import 'package:provider/provider.dart';
 import '../../view_model/ticket_viewmodel.dart';
 import '../../../domain/entities/booking.dart';
@@ -120,6 +121,12 @@ class _TicketPageState extends State<TicketPage> {
                                         ),
                                         onPressed: () {
                                           // Xử lý thanh toán ở đây nếu cần
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => TicketDetailScreen(bookingId: booking.id),
+                                            ),
+                                          );
                                         },
                                         child: const Text("Thanh toán"),
                                       )

@@ -3,7 +3,6 @@ import 'package:my_app/presentation/pages/customer_screen/bottom_nav.dart';
 import 'package:provider/provider.dart';
 import '../view_model/sign_in_view_model.dart';
 import 'sign_up_screen.dart';
-import 'customer_screen/home_page.dart';
 
 class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key});

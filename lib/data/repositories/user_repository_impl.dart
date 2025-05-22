@@ -38,6 +38,16 @@ class UserRepositoryImpl implements UserRepository {
         email: email,
         password: password,
       );
+      
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  @override
+  Future<bool> signOut() async {
+    try {
+      await auth.signOut();
       return true;
     } catch (e) {
       return false;

@@ -72,15 +72,16 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ToggleButtons(
-                isSelected: [selectedIndex == 0, selectedIndex == 1],
+                isSelected: [
+                  homeViewModel.selectedIndex == 0,
+                  homeViewModel.selectedIndex == 1
+                ],
                 borderRadius: BorderRadius.circular(10),
                 color: Colors.white70,
                 selectedColor: Colors.white,
                 fillColor: Colors.grey[800],
                 onPressed: (index) {
-                  setState(() {
-                    selectedIndex = index;
-                  });
+                  homeViewModel.setSelectedIndex(index);
                 },
                 children: const [
                   Padding(
@@ -106,35 +107,25 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(color: Colors.white)),
                           )
                         : FlutterCarousel.builder(
-                            itemCount: homeViewModel.movies.length,
+                            itemCount: homeViewModel.filteredMovies.length,
                             options: FlutterCarouselOptions(
                               autoPlay: false,
                               enlargeCenterPage: true,
                               viewportFraction: 0.5,
                               showIndicator: false,
-                              initialPage: (homeViewModel.movies.length) ~/ 2,
-                              enableInfiniteScroll: true,
+                              initialPage:
+                                  (homeViewModel.filteredMovies.length) ~/ 2,
                             ),
                             itemBuilder: (context, index, realIdx) {
-                              var movie = homeViewModel.movies[index];
-                              DateTime now = DateTime.now();
-                              DateTime releaseDate = DateFormat("dd/MM/yyyy")
-                                  .parse(movie.releaseDate);
-
-                              if ((selectedIndex == 0 &&
-                                      releaseDate.isAfter(now)) ||
-                                  (selectedIndex == 1 &&
-                                      (releaseDate.isBefore(now) ||
-                                          releaseDate.isAtSameMomentAs(now)))) {
-                                return SizedBox.shrink();
-                              }
-
+                              final movie = homeViewModel.filteredMovies[index];
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DetailFilmPage(movieId: movie.id,),
+                                      builder: (context) => DetailFilmPage(
+                                        movieId: movie.id,
+                                      ),
                                     ),
                                   );
                                 },
@@ -212,7 +203,8 @@ class _HomePageState extends State<HomePage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => CinemaDetailPage(cinemaId: cinema.id),
+                                      builder: (context) =>
+                                          CinemaDetailPage(cinemaId: cinema.id),
                                     ),
                                   );
                                 },

@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:my_app/presentation/pages/customer_screen/home_page.dart';
-import 'package:my_app/presentation/pages/sign_in_screen.dart';
+import 'package:my_app/presentation/pages/customer_screen/profile_page.dart';
 import 'ticket_page.dart';
 
 class Bottomnav extends StatefulWidget {
@@ -15,7 +15,7 @@ class _BottomnavState extends State<Bottomnav> {
   late List<Widget> _pages;
   late HomePage Hompage;
   late TicketPage ticketsPage;
-  late SignInScreen profilePage;
+  late ProfilePage profilePage;
 
   int currentIndex = 0;
 
@@ -23,7 +23,7 @@ class _BottomnavState extends State<Bottomnav> {
   void initState() {
     Hompage = HomePage();
     ticketsPage = TicketPage();
-    profilePage = SignInScreen();
+    profilePage = ProfilePage();
     _pages = [Hompage, ticketsPage,profilePage,];
     super.initState();
   }

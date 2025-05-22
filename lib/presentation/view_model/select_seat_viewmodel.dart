@@ -42,7 +42,7 @@ class SelectSeatViewmodel extends ChangeNotifier {
   }
   void toggleSeatSelection(Seat seat) {
     if (selectedSeats.contains(seat)) {
-      selectedSeats.remove(seat.id);
+      selectedSeats.remove(seat);
       totalPrice -= seat.price;
     } else {
       selectedSeats.add(seat);
@@ -69,5 +69,10 @@ class SelectSeatViewmodel extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+  void clearSelectedSeats() {
+    selectedSeats.clear();
+    totalPrice = 0;
+    notifyListeners();
   }
 }

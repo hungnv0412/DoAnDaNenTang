@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../view_model/select_seat_viewmodel.dart';
 import '../../../domain/entities/seat.dart';
+import 'ticket_page.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
   final String cinemaId;
@@ -25,6 +26,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<SelectSeatViewmodel>(context, listen: false)
+          .clearSelectedSeats();
+    });
+      // Gọi loadSeats khi
     // Load seats khi vào màn hình
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SelectSeatViewmodel>(context, listen: false)
@@ -133,7 +139,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text("Đặt vé thành công!")),
                               );
-                              Navigator.pop(context);
+                              Navigator.push(context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const TicketPage()));
                             }
                           } catch (e) {
                             if (mounted) {

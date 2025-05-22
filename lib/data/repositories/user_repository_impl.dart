@@ -34,7 +34,10 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<bool> signUp(String email, String password) async {
     try {
-      await auth.createUserWithEmailAndPassword(email: email, password: password);
+      await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       return true;
     } catch (e) {
       return false;

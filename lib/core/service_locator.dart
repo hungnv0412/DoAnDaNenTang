@@ -1,9 +1,18 @@
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_app/domain/repositories/booking_repository.dart';
+import 'package:my_app/domain/repositories/seat_repository.dart';
+import 'package:my_app/domain/use_cases/book_seat_usecase.dart';
+import 'package:my_app/domain/use_cases/get_booking_by_userId.dart';
+import 'package:my_app/domain/use_cases/get_seat_usecase.dart';
+import 'package:my_app/presentation/view_model/cinema_detail_viewmodel.dart';
+import 'package:my_app/presentation/view_model/select_seat_viewmodel.dart';
 
 
 // Repositories
+import '../data/repositories/booking_repository_impl.dart' show BookingRepositoryImpl;
+import '../data/repositories/seat_repository_impl.dart';
 import '../data/repositories/showtimes_repository_impl.dart';
 import '../data/repositories/user_repository_impl.dart';
 import '../data/repositories/movie_repository_impl.dart';
@@ -25,11 +34,11 @@ import '../domain/use_cases/sign_up_use_case.dart';
 
 // View Models
 import '../presentation/view_model/booking_viewmodel.dart';
-import '../presentation/view_model/cinema_detail_viewmodel.dart';
 import '../presentation/view_model/home_view_model.dart';
 import '../presentation/view_model/sign_in_view_model.dart';
 import '../presentation/view_model/sign_up_view_model.dart';
 import '../presentation/view_model/detail_film_view_model.dart';
+import '../presentation/view_model/ticket_viewmodel.dart' show TicketViewmodel;
 
 final sl = GetIt.instance;
 
@@ -44,6 +53,8 @@ void init() {
   sl.registerLazySingleton<MovieRepository>(() => MovieRepositoryImpl(sl()));
   sl.registerLazySingleton<CinemaRepository>(() => CinemaRepositoryImpl(sl()));
   sl.registerLazySingleton<ShowtimesRepository>(()=> ShowtimesRepositoryImpl(sl()));
+  sl.registerLazySingleton<SeatRepository>(()=> SeatRepositoryImpl(sl()));
+  sl.registerLazySingleton<BookingRepository>(()=> BookingRepositoryImpl(sl()));
 
 
   // Use Cases
@@ -56,6 +67,9 @@ void init() {
   sl.registerLazySingleton(() => GetCinemasByMovieAndDateUseCase(sl()));
   sl.registerLazySingleton(() => GetShowtimesUseCase(sl()));
   sl.registerLazySingleton(() => GetCinemaDetailUseCase(sl(), sl()));
+  sl.registerLazySingleton(()=> GetSeatUsecase(sl()));
+  sl.registerLazySingleton(()=> BookSeatUsecase(sl()));
+  sl.registerLazySingleton(()=> GetBookingByUserid(sl()));
 
   // View Models
   sl.registerFactory(() => HomeViewModel(
@@ -71,4 +85,9 @@ void init() {
         getDatesUseCase: sl(),
         getCinemasUseCase: sl(),
         getShowtimesUseCase: sl()));
+  sl.registerFactory(() => CinemaDetailViewModel(
+    useCase : sl(),
+  ));
+  sl.registerFactory(()=> SelectSeatViewmodel(bookSeatUsecase: sl(), getSeatUsecase: sl()));
+  sl.registerFactory(() => TicketViewmodel(getBookingByUserid: sl()));
 }

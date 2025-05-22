@@ -2,33 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_app/presentation/view_model/cinema_detail_viewmodel.dart';
 import 'package:my_app/presentation/pages/customer_screen/detail_film_page.dart';
-import 'package:my_app/core/service_locator.dart';
-
 import '../../../domain/use_cases/get_cinema_detail.dart';
 
-class CinemaDetailPage extends StatelessWidget {
+class CinemaDetailPage extends StatefulWidget {
   final String cinemaId;
 
   const CinemaDetailPage({
-    Key? key,
+    super.key,
     required this.cinemaId,
-  }) : super(key: key);
-
+  });
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CinemaDetailViewModel(
-        cinemaId,
-        sl(), // Inject GetCinemaDetailUseCase từ service locator
-      ),
-      child: const _CinemaDetailView(),
-    );
-  }
+  State<CinemaDetailPage> createState() => _CinemaDetailPageState();
 }
 
-class _CinemaDetailView extends StatelessWidget {
-  const _CinemaDetailView({Key? key}) : super(key: key);
-
+class _CinemaDetailPageState extends State<CinemaDetailPage>  {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CinemaDetailViewModel>().fetchData(widget.cinemaId);
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CinemaDetailViewModel>();

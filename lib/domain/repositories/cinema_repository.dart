@@ -1,4 +1,3 @@
-import 'package:my_app/domain/entities/movie.dart';
 
 import '../entities/cinema.dart';
 import '../entities/showtime.dart';

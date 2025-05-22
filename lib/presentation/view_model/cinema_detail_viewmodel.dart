@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:my_app/domain/use_cases/get_cinema_detail.dart';
 
 class CinemaDetailViewModel extends ChangeNotifier {
-  final String cinemaId;
   final GetCinemaDetailUseCase useCase;
 
   bool isLoading = true;
@@ -13,11 +12,11 @@ class CinemaDetailViewModel extends ChangeNotifier {
   List<CinemaMovieInfo> moviesList = [];
   String cinemaName = "đang tải...";
 
-  CinemaDetailViewModel(this.cinemaId, this.useCase) {
-    fetchData();
-  }
+  CinemaDetailViewModel({
+    required this.useCase,
+  });
 
-  Future<void> fetchData() async {
+  Future<void> fetchData(String cinemaId) async {
     try {
       isLoading = true;
       notifyListeners();

@@ -1,4 +1,3 @@
-import 'package:my_app/domain/entities/movie.dart';
 import 'package:my_app/domain/repositories/cinema_repository.dart';
 import 'package:my_app/domain/repositories/movie_repository.dart';
 
@@ -34,6 +33,7 @@ class GetCinemaDetailUseCase {
 
     for (var showtime in showtimes) {
       final movie = await movieRepository.getMovieById(showtime.movieId);
+      
       if (movie == null) continue;
 
       movieInfos.add(CinemaMovieInfo(

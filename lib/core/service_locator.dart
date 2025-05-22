@@ -84,7 +84,7 @@ void init() {
   sl.registerFactory(() => BookingViewModel(
         getDatesUseCase: sl(),
         getCinemasUseCase: sl(),
-        getShowtimesUseCase: sl()));
+        getShowtimesUseCase: sl(), getMovieByIdUseCase: sl()));
   sl.registerFactory(() => CinemaDetailViewModel(
     useCase : sl(),
   ));

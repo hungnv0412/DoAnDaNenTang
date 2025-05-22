@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/domain/use_cases/get_movie_by_id.dart';
 import '../../domain/entities/cinema.dart';
 import '../../domain/entities/showtime.dart';
 import '../../domain/use_cases/get_booking_data.dart';
@@ -7,7 +8,9 @@ class BookingViewModel extends ChangeNotifier {
   final GetAvailableDatesUseCase getDatesUseCase;
   final GetCinemasByMovieAndDateUseCase getCinemasUseCase;
   final GetShowtimesUseCase getShowtimesUseCase;
+  final GetMovieById getMovieByIdUseCase;
 
+  String _movieName = "";
   bool _isLoading = false;
   String? _errorMessage;
   DateTime? _selectedDate;
@@ -16,6 +19,7 @@ class BookingViewModel extends ChangeNotifier {
   List<Cinema> _availableCinemas = [];
   List<Showtime> _showtimes = [];
 
+  String get movieName => _movieName;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   DateTime? get selectedDate => _selectedDate;
@@ -28,7 +32,27 @@ class BookingViewModel extends ChangeNotifier {
     required this.getDatesUseCase,
     required this.getCinemasUseCase,
     required this.getShowtimesUseCase,
+    required this.getMovieByIdUseCase,
   });
+
+  Future<String> loadMovieName(String movieId) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      final movie = await getMovieByIdUseCase(movieId);
+      if (movie != null) {
+        _movieName = movie.name;
+        return _movieName;
+      } else {
+        _errorMessage = "Lỗi khi tải tên phim";
+      }
+    } catch (e) {
+      _errorMessage = "Lỗi khi tải tên phim";
+    } finally {
+      _setLoading(false);
+    }
+    return Future.error(_errorMessage ?? "Unknown error");
+  }
 
   Future<void> loadAvailableDates(String movieId) async {
     _setLoading(true);

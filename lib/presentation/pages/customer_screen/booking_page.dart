@@ -30,7 +30,12 @@ class _BookingScreenState extends State<BookingScreen> {
     final vm = Provider.of<BookingViewModel>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Đặt vé")),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(vm.movieName, style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.grey[900],
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
       body: Builder(builder: (context){
         if(vm.isLoading) {
           return Center(child: CircularProgressIndicator());
